@@ -1,9 +1,13 @@
-from setuptools import setup
+import setuptools
 
-setup(name='tree_ring',
+setuptools.setup(name='tree_ring',
       version='0.1',
       description='A System for Moment Propagation for Polynomial Systems.',
       author='Allen Wang',
       author_email='allenw@mit.edu',
       license='MIT',
-      packages=setuptools.find_packages())
+      packages=setuptools.find_packages(),
+      install_requires=[
+          'sympy', 'numpy', 'networkx'
+      ]
+      )

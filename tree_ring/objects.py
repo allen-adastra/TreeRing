@@ -1,30 +1,24 @@
 import sympy as sp
 import numpy as np
 
-class BaseVariable(object):
+class StateVariable(object):
     """
     A variable of the polynomial system x_{t + 1} = f(x_t).
     """
-    def __init__(self, sympy_rep, computable_moments, update_relation):
+    def __init__(self, sympy_rep, dynamics):
         """
         Args:
             sympy_rep (Instance of Sp.Symbol): Representation of this variable in SymPy.
-            computable_moments (Set of Natural Numbers): Maximum moment that we can compute for this variable.
-            update_relation (SymPy expression or None): If this variable is x, then this expression is f(x_t) expanded.
+            dynamics (SymPy expression): The dynamics of this state variable.
         """
         self._sympy_rep = sympy_rep
-        self._computable_moments = computable_moments
-        self._update_relation = update_relation
+        self._update_relation = dynamics
 
     def __str__(self):
         return str(self._sympy_rep)
 
     def __repr__(self):
         return repr(self._sympy_rep)
-
-    @property
-    def computable_moments(self):
-        return self._computable_moments
 
     @property
     def update_relation(self):
@@ -34,11 +28,25 @@ class BaseVariable(object):
     def sympy_rep(self):
         return self._sympy_rep
 
-    def add_computable_moment(self, n):
-        self._computable_moments.add(n)
+class DisturbanceVariable(object):
+    def __init__(self, sympy_rep):
+        """
+        Args:
+            sympy_rep (Instance of Sp.Symbol): Representation of this variable in SymPy.
+        """
+        self._sympy_rep = sympy_rep
+    
+    def __str__(self):
+        return str(self._sympy_rep)
 
+    def __repr__(self):
+        return repr(self._sympy_rep)
 
-class DerivedVariable(object):
+    @property
+    def sympy_rep(self):
+        return self._sympy_rep
+
+class BasisVariable(object):
     def __init__(self, variable_power_mapping, update_relation):
         """
         Args:
@@ -75,5 +83,6 @@ class DerivedVariable(object):
         Args:
             variable_power_mapping (Dictionary Mapping BaseVariable -> Natural Number): variable power mapping to check.
         """
-        if variable_power_map == self._variable_power_mapping:
+        reduced_vpm = {var : power for var, power in variable_power_map.items() if power > 0}
+        if reduced_vpm == self._variable_power_mapping:
             return True
