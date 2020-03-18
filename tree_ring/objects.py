@@ -3,7 +3,7 @@ import numpy as np
 
 class StateVariable(object):
     """
-    A variable of the polynomial system x_{t + 1} = f(x_t).
+    A state variable of the polynomial system x_{t + 1} = f(x_t, w_t).
     """
     def __init__(self, sympy_rep, dynamics):
         """
@@ -29,6 +29,9 @@ class StateVariable(object):
         return self._sympy_rep
 
 class DisturbanceVariable(object):
+    """
+    A disturbance variable of the polynomial system x_{t + 1} = f(x_t, w_t).
+    """
     def __init__(self, sympy_rep):
         """
         Args:

@@ -20,7 +20,7 @@ def expand(variable_power_mapping, state_variables, disturbance_variables, depen
     new_basis_variable = BasisVariable(reduced_vpm, np.prod(variable_expansions))
     moment_basis.add(new_basis_variable)
 
-    # Express in as a polynomial.
+    # Express as a polynomial.
     state_variables_sympy = [var.sympy_rep for var in state_variables]
     poly = sp.poly(new_basis_variable.update_relation, state_variables_sympy)
 
@@ -34,12 +34,16 @@ def expand(variable_power_mapping, state_variables, disturbance_variables, depen
             if update_relation_exists == False:
                 expand(new_vpm, state_variables, disturbance_variables, dependence_graph, moment_basis, reduced_muf=reduced_muf)
         else:
-            # We are finding a completion w.r.t. the reduced moment update form.
+            # We are finding a completion w.r.t. the reduced moment update form. 
             # Need to first find a factorization.
             # Find the subgraph induced by multi_index.
             variables_in_mono = {state_variables[i] for i, degree in enumerate(multi_index) if degree != 0}
             dependence_subgraph = dependence_graph.subgraph(variables_in_mono)
+
+            # Find the connected components of the subgraph.
             connected_components = list(nx.connected_components(dependence_subgraph))
+
+            # For each connected component there is a moment. Check if the moment is already in the moment basis.
             for comp in connected_components:
                 component_var_power_map = {var : new_vpm[var] for var in comp}
                 update_relation_exists = any([d_var.equivalent_variable_power_mapping(component_var_power_map) for d_var in moment_basis])

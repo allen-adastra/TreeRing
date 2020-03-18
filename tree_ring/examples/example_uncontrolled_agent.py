@@ -5,7 +5,7 @@ import networkx as nx
 
 class UncontrolledAgent(object):
     def __init__(self):
-        # Declare state variables.
+        # Declare SymPy variables.
         x = sp.Symbol("x")
         y = sp.Symbol("y")
         v = sp.Symbol("v")
@@ -31,9 +31,10 @@ class UncontrolledAgent(object):
         self._cos_wthetat = tro.DisturbanceVariable(cos_wtheta)
         self._disturbance_variables = [self._sin_wthetat, self._cos_wthetat, self._wvt]
 
-        self._variable_dependence_graph = nx.Graph()
-        self._variable_dependence_graph.add_nodes_from(self._state_variables)
-        self._variable_dependence_graph.add_edges_from([(self._x, self._yt), (self._x, self._vt), (self._yt, self._vt),
+        # Specify dependence graph.
+        self._dependence_graph = nx.Graph()
+        self._dependence_graph.add_nodes_from(self._state_variables)
+        self._dependence_graph.add_edges_from([(self._x, self._yt), (self._x, self._vt), (self._yt, self._vt),
                                                         (self._x, self._sin_thetat), (self._x, self._cos_thetat), (self._yt, self._sin_thetat),
                                                         (self._yt, self._cos_thetat)])
 
@@ -46,7 +47,7 @@ class UncontrolledAgent(object):
         moments_to_propagate = [{self._x : 2}, {self._yt : 2}, {self._x : 1, self._yt : 1}]
         moment_basis = set()
         for variable_power_map in moments_to_propagate:
-            expand(variable_power_map, self._state_variables, self._disturbance_variables, self._variable_dependence_graph, moment_basis, reduced_muf=True)
+            expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=True)
         print_moment_basis(moment_basis)
     
     def test_unreduced(self):
@@ -58,7 +59,7 @@ class UncontrolledAgent(object):
         moments_to_propagate = [{self._x : 2}, {self._yt : 2}, {self._x : 1, self._yt : 1}]
         moment_basis = set()
         for variable_power_map in moments_to_propagate:
-            expand(variable_power_map, self._state_variables, self._disturbance_variables, self._variable_dependence_graph, moment_basis, reduced_muf=False)
+            expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=False)
         print_moment_basis(moment_basis)
 
 def print_moment_basis(moment_basis):
