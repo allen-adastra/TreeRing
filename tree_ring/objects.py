@@ -49,6 +49,21 @@ class DisturbanceVariable(object):
     def sympy_rep(self):
         return self._sympy_rep
 
+    def power(self, power):
+        """
+        Return a sympy variable representing this variable raised to a power in the notation:
+            variable_name + power
+        So for example:
+            wv2
+        Args:
+            pow (int): [description]
+
+        Returns:
+            sp.Symbol: [description]
+        """
+        return sp.Symbol(self._sympy_rep.name + str(power))
+
+
 class BasisVariable(object):
     def __init__(self, variable_power_mapping, update_relation):
         """
@@ -59,8 +74,10 @@ class BasisVariable(object):
             update_relation (SymPy expression): This variable in at time t + 1 as a polynomial in base variables at time t.
         """
         assert min(variable_power_mapping.values()) > 0
-        self._variable_power_mapping = variable_power_mapping
+        self._variable_power_mapping = {var : power for var, power in variable_power_mapping.items() if power > 0}
         self._update_relation = update_relation
+        self._sympy_rep = self.generate_sympy_rep()
+        self._update_relation_code_rep = None
 
     def __hash__(self):
         return hash(self.sympy_rep)
@@ -70,7 +87,7 @@ class BasisVariable(object):
 
     @property
     def sympy_rep(self):
-        return np.prod([var.sympy_rep**power for var, power in self._variable_power_mapping.items()])
+        return self._sympy_rep
 
     @property
     def variable_power_mapping(self):
@@ -79,6 +96,21 @@ class BasisVariable(object):
     @property
     def update_relation(self):
         return self._update_relation
+
+    @property
+    def update_relation_code_rep(self):
+        return self._code_rep
+    
+    def generate_sympy_rep(self):
+        """
+        Generate the sympy rep of the basis variable using the variables in self._variable_power_mapping.
+        """
+        string = ''
+        for var, power in self._variable_power_mapping.items():
+            string += var.sympy_rep.name + str(power) + "_"
+        # Remove the underscore at the end.
+        string = string.strip("_")
+        return sp.Symbol(string)
 
     def equivalent_variable_power_mapping(self, variable_power_map):
         """

@@ -1,6 +1,7 @@
-from tree_ring.tree_ring import expand
+from tree_ring.tree_ring import expand, generate_code_reps
 import tree_ring.objects as tro
 import sympy as sp
+import numpy as np
 import networkx as nx
 
 class UncontrolledAgent(object):
@@ -9,13 +10,12 @@ class UncontrolledAgent(object):
         x = sp.Symbol("x")
         y = sp.Symbol("y")
         v = sp.Symbol("v")
-        wv = sp.Symbol("w_v")
-        wtheta = sp.Symbol("w_theta")
+        wv = sp.Symbol("wv")
         theta = sp.Symbol("theta")
         cos_theta = sp.Symbol("c")
         sin_theta = sp.Symbol("s")
-        sin_wtheta = sp.Symbol("c_w")
-        cos_wtheta = sp.Symbol("s_w")
+        sin_wtheta = sp.Symbol("cw")
+        cos_wtheta = sp.Symbol("sw")
 
         # Initialize state variables with discrete time dynamics.
         self._x = tro.StateVariable(x, x + v * cos_theta)
@@ -49,7 +49,10 @@ class UncontrolledAgent(object):
         for variable_power_map in moments_to_propagate:
             expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=True)
         print_moment_basis(moment_basis)
-    
+        generate_code_reps(moment_basis, self._dependence_graph, self._state_variables, self._disturbance_variables)
+        for basis_var in moment_basis:
+            print(basis_var.code_rep)
+
     def test_unreduced(self):
         # List of moments we want to propagate represented as dictionaries, in this case, the second moment of position.
         # Each dictionary maps the the variables in the moment to each power. Below, we have that:
@@ -61,6 +64,10 @@ class UncontrolledAgent(object):
         for variable_power_map in moments_to_propagate:
             expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=False)
         print_moment_basis(moment_basis)
+        # TODO: generate_code_rep does not work for the unreduced case.
+        generate_code_reps(moment_basis, self._dependence_graph, self._state_variables, self._disturbance_variables)
+
+
 
 def print_moment_basis(moment_basis):
     print("Printing variables of the moment basis and their expansions.")
