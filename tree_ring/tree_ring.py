@@ -53,12 +53,12 @@ def expand(variable_power_mapping, state_variables, disturbance_variables, depen
                     expand(component_var_power_map, state_variables, disturbance_variables, dependence_graph, moment_basis, reduced_muf=reduced_muf)
     return moment_basis
 
-def generate_code_reps(all_basis_variables, dependence_graph, state_variables, disturbance_variables):
+def generate_code_reps(all_basis_variables, state_dependence_graph, state_variables, disturbance_variables):
     """
 
     Args:
         all_basis_variables ([type]): [description]
-        dependence_graph ([type]): [description]
+        state_dependence_graph ([type]): [description]
         state_variables ([type]): [description]
         disturbance_variables ([type]): [description]
     """
@@ -79,8 +79,7 @@ def generate_code_reps(all_basis_variables, dependence_graph, state_variables, d
         terms_in_code_rep = []
 
         # Iterate through the terms of the update relation.
-        for multi_index in update_relation.monoms():
-
+        for multi_index, coeff in update_relation.terms():
             # This term will be expressed in terms of the product of 
             # basis variables and disturbance variables expressed in code rep
             # in this list.
@@ -94,7 +93,7 @@ def generate_code_reps(all_basis_variables, dependence_graph, state_variables, d
             # Find the connected components in the state dependence graph associated with this term.
             term_vpm = {state_variables[i] : multi_index[i] for i in state_var_idx if multi_index[i] != 0}
             term_vars = list(term_vpm.keys())
-            dependence_subgraph = dependence_graph.subgraph(term_vars)
+            dependence_subgraph = state_dependence_graph.subgraph(term_vars)
             connected_components = list(nx.connected_components(dependence_subgraph))
 
             # There should be a one-to-one mapping between connected components and
@@ -110,6 +109,6 @@ def generate_code_reps(all_basis_variables, dependence_graph, state_variables, d
 
             # If the list is not empty, we can generate the code rep now.
             if len(term_code_rep) > 0:
-                basis_rep = np.prod(term_code_rep)
+                basis_rep = np.prod([coeff] + term_code_rep)
                 terms_in_code_rep.append(basis_rep)
         basis_var.code_rep = sum(terms_in_code_rep)

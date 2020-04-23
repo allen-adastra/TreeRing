@@ -28,6 +28,10 @@ class StateVariable(object):
     def sympy_rep(self):
         return self._sympy_rep
 
+    def to_basis_variable(self):
+        vpm = {self : 1}
+        return BasisVariable(vpm, self._update_relation)
+
 class DisturbanceVariable(object):
     """
     A disturbance variable of the polynomial system x_{t + 1} = f(x_t, w_t).
@@ -100,6 +104,9 @@ class BasisVariable(object):
     @property
     def update_relation_code_rep(self):
         return self._code_rep
+
+    def state_variable_rep(self):
+        return np.prod([var.sympy_rep**power for var, power in self._variable_power_mapping.items()])
     
     def generate_sympy_rep(self):
         """

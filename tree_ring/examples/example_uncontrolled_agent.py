@@ -14,8 +14,8 @@ class UncontrolledAgent(object):
         theta = sp.Symbol("theta")
         cos_theta = sp.Symbol("c")
         sin_theta = sp.Symbol("s")
-        sin_wtheta = sp.Symbol("cw")
-        cos_wtheta = sp.Symbol("sw")
+        cos_wtheta = sp.Symbol("cw")
+        sin_wtheta = sp.Symbol("sw")
 
         # Initialize state variables with discrete time dynamics.
         self._x = tro.StateVariable(x, x + v * cos_theta)
@@ -37,7 +37,7 @@ class UncontrolledAgent(object):
         self._dependence_graph.add_edges_from([(self._x, self._yt), (self._x, self._vt), (self._yt, self._vt),
                                                         (self._x, self._sin_thetat), (self._x, self._cos_thetat), (self._yt, self._sin_thetat),
                                                         (self._yt, self._cos_thetat), (self._cos_thetat, self._sin_thetat)])
-
+        
     def test_reduced(self):
         # List of moments we want to propagate represented as dictionaries, in this case, the second moment of position.
         # Each dictionary maps the the variables in the moment to each power. Below, we have that:
@@ -45,10 +45,12 @@ class UncontrolledAgent(object):
         #   E[y^2] is represented by {self._yt : 2}
         #   E[xy] is represented by {self._x : 1, self._yt : 1}
         moments_to_propagate = [{self._x : 2}, {self._yt : 2}, {self._x : 1, self._yt : 1}]
-        moment_basis = set()
+
+        # Initialize the moment basis with the state variables.
+        moment_basis = {var.to_basis_variable() for var in self._state_variables}
         for variable_power_map in moments_to_propagate:
             expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=True)
-        print_moment_basis(moment_basis)
+        #print_moment_basis(moment_basis)
         generate_code_reps(moment_basis, self._dependence_graph, self._state_variables, self._disturbance_variables)
         generate_underactuated_code(moment_basis)
 
@@ -59,7 +61,9 @@ class UncontrolledAgent(object):
         #   E[y^2] is represented by {self._yt : 2}
         #   E[xy] is represented by {self._x : 1, self._yt : 1}
         moments_to_propagate = [{self._x : 2}, {self._yt : 2}, {self._x : 1, self._yt : 1}]
-        moment_basis = set()
+
+        # Initialize the moment basis using state variables.
+        moment_basis = {var.to_basis_variable() for var in self._state_variables}
         for variable_power_map in moments_to_propagate:
             expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=False)
         print_moment_basis(moment_basis)
@@ -72,6 +76,9 @@ def generate_underactuated_code(moment_basis):
     print("\n")
     for i, basis_var in enumerate(moment_basis):
         print("prog.AddConstraint(moment_state[t + 1, " + str(i) + "] == " + str(basis_var.code_rep) + ")")
+    print("\n")
+    for i, basis_var in enumerate(moment_basis):
+        print("state[" + str(i) + "] = " + str(basis_var.state_variable_rep()))
 
 def print_moment_basis(moment_basis):
     print("Printing variables of the moment basis and their expansions.")
