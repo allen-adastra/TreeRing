@@ -36,7 +36,7 @@ class UncontrolledAgent(object):
         self._dependence_graph.add_nodes_from(self._state_variables)
         self._dependence_graph.add_edges_from([(self._x, self._yt), (self._x, self._vt), (self._yt, self._vt),
                                                         (self._x, self._sin_thetat), (self._x, self._cos_thetat), (self._yt, self._sin_thetat),
-                                                        (self._yt, self._cos_thetat)])
+                                                        (self._yt, self._cos_thetat), (self._cos_thetat, self._sin_thetat)])
 
     def test_reduced(self):
         # List of moments we want to propagate represented as dictionaries, in this case, the second moment of position.
@@ -50,8 +50,7 @@ class UncontrolledAgent(object):
             expand(variable_power_map, self._state_variables, self._disturbance_variables, self._dependence_graph, moment_basis, reduced_muf=True)
         print_moment_basis(moment_basis)
         generate_code_reps(moment_basis, self._dependence_graph, self._state_variables, self._disturbance_variables)
-        for basis_var in moment_basis:
-            print(basis_var.code_rep)
+        generate_underactuated_code(moment_basis)
 
     def test_unreduced(self):
         # List of moments we want to propagate represented as dictionaries, in this case, the second moment of position.
@@ -67,7 +66,12 @@ class UncontrolledAgent(object):
         # TODO: generate_code_rep does not work for the unreduced case.
         generate_code_reps(moment_basis, self._dependence_graph, self._state_variables, self._disturbance_variables)
 
-
+def generate_underactuated_code(moment_basis):
+    for i, basis_var in enumerate(moment_basis):
+        print(str(basis_var.sympy_rep) + " = moment_state[t, " + str(i) + "]")
+    print("\n")
+    for i, basis_var in enumerate(moment_basis):
+        print("prog.AddConstraint(moment_state[t + 1, " + str(i) + "] == " + str(basis_var.code_rep) + ")")
 
 def print_moment_basis(moment_basis):
     print("Printing variables of the moment basis and their expansions.")
