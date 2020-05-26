@@ -1,6 +1,8 @@
 # TreeRing
 A framework for exact moment propagation for nonlinear systems.
 
+NOTE: TreeRing is currently being integrated into a broader package: [AlgebraicMoments](https://github.com/allen-adastra/algebraic_moments)
+
 ## Installation and Dependencies
 To install the package, you can simply run `pip3 install -e .` in the root of this repo.
 
